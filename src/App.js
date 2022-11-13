@@ -1,6 +1,11 @@
-import React from "react";
-import List from "./components/List/List";
+import React, { useState } from "react";
+import List from "./components/List";
+import AddList from "./components/AddList";
 
+import DB from "./assets/db.json";
+
+// расширения файлов .js говорят о том, что в компоненте есть и вёрстка, и сложная логика
+// расширения файлов .jsx говорят о том, что в компоненте есть только вёрстка
 function App() {
   return (
     <div className="todo">
@@ -27,7 +32,6 @@ function App() {
             },
           ]}
         />
-
         <List
           items={[
             {
@@ -51,7 +55,9 @@ function App() {
               name: "Личное",
             },
           ]}
+          isRemovable
         />
+        <AddList colors={DB.colors} />
       </div>
     </div>
   );
