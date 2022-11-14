@@ -1,12 +1,31 @@
 import React, { useState } from "react";
 import List from "./components/List";
 import AddList from "./components/AddList";
+import Tasks from "./components/Tasks";
 
 import DB from "./assets/db.json";
 
 // расширения файлов .js говорят о том, что в компоненте есть и вёрстка, и сложная логика
 // расширения файлов .jsx говорят о том, что в компоненте есть только вёрстка
 function App() {
+  // создаем массив названий списков дел и его цвета (кружки)
+  const [lists, setLists] = useState(
+    DB.lists.map((item) => {
+      // достаем colorId из массива DB.lists и сверяем его с id в массиве DB.colors
+      item.color = DB.colors.filter(
+        (color) => color.id === item.colorId
+      )[0].name;
+      // console.log(item);
+      return item;
+    })
+  );
+
+  const onAddList = (obj) => {
+    // пихаем новый объект (название списока дел) из компонента AddList в наш state
+    const newList = [...lists, obj];
+    setLists(newList);
+  };
+
   return (
     <div className="todo">
       <div className="todo__sidebar">
@@ -33,31 +52,14 @@ function App() {
           ]}
         />
         <List
-          items={[
-            {
-              color: "green",
-              name: "Покупки",
-            },
-            {
-              color: "blue",
-              name: "Фронтенд",
-            },
-            {
-              color: "pink",
-              name: "Фильмы и сериалы",
-            },
-            {
-              color: "light-green",
-              name: "Книги",
-            },
-            {
-              color: "gray",
-              name: "Личное",
-            },
-          ]}
+          items={lists}
           isRemovable
+          onRemove={(list) => console.log(list)}
         />
-        <AddList colors={DB.colors} />
+        <AddList onAdd={onAddList} colors={DB.colors} />
+      </div>
+      <div className="todo__tasks">
+        <Tasks />
       </div>
     </div>
   );
