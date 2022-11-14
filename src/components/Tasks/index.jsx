@@ -25,7 +25,7 @@ const Tasks = () => {
             </label>
           </div>
           
-          <p>ReactJS Hooks (useState, useReducer, useEffect и т.д.)</p>
+          <input onChange={() => console.log(1)} value='ReactJS Hooks (useState, useReducer, useEffect и т.д.)' />
         </div>
       </div>
     </div>
