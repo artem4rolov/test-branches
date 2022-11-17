@@ -1,24 +1,34 @@
-import React, { useState } from "react";
-import List from "./components/List";
-import AddList from "./components/AddList";
-import Tasks from "./components/Tasks";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+// импортируем компоненты из корневого indes.js в папке components
+import { AddList, List, Tasks } from "./components";
 
-import DB from "./assets/db.json";
+// import DB from "./assets/db.json";
+// вместо fetch используем axios
 
 // расширения файлов .js говорят о том, что в компоненте есть и вёрстка, и сложная логика
 // расширения файлов .jsx говорят о том, что в компоненте есть только вёрстка
 function App() {
   // создаем массив названий списков дел и его цвета (кружки)
-  const [lists, setLists] = useState(
-    DB.lists.map((item) => {
-      // достаем colorId из массива DB.lists и сверяем его с id в массиве DB.colors
-      item.color = DB.colors.filter(
-        (color) => color.id === item.colorId
-      )[0].name;
-      // console.log(item);
-      return item;
-    })
-  );
+  const [lists, setLists] = useState(null);
+  const [colors, setColors] = useState(null);
+
+  // используя хук useEffct убеждаемся в том, что компонент точно зарендерен на страницу, и только после рендера мы вызываем GET запрос (по аналогии с жизненным циклом componentDidMount),
+  //  указываем в конце пустой массив, чтобы запрос вызвался один раз (при первом монтировании компонента), или, напишем вместо пустого массива массив lists - например при изменении таблицы lists (как только добавили новый список дел - снова вызываем GET запрос)
+  useEffect(() => {
+    // через axios.get делаем GET запрос и получаем из response только объект data (данные), потому что fetch выводит все объекты (config, headers, request, status и тд.)
+    // в строке прописываем логику ( lists?_expand=color ) - наша таблица lists (списки дел) должна получать по colorId (json ищет по ключу colors таблицу с цветами) цвет из таблицы colors
+    // в строке прописываем логику ( &_embed=tasks ) - аша таблица tasks (дела) имеет listId, она обращается к конкретному списку дел (из таблицы lists)
+    axios
+      .get("http://localhost:3001/lists?_expand=color&_embed=tasks")
+      .then(({ data }) => {
+        setLists(data);
+      });
+    // по аналогии с lists получаем таблицу с цветами (colors)
+    axios.get("http://localhost:3001/colors").then(({ data }) => {
+      setColors(data);
+    });
+  }, []);
 
   const onAddList = (obj) => {
     // пихаем новый объект (название списока дел) из компонента AddList в наш state
@@ -29,6 +39,7 @@ function App() {
   return (
     <div className="todo">
       <div className="todo__sidebar">
+        {/* Верхняя кнопка "Все задачи" */}
         <List
           items={[
             {
@@ -47,19 +58,32 @@ function App() {
                 </svg>
               ),
               name: "Все задачи",
-              active: true,
             },
           ]}
         />
-        <List
-          items={lists}
-          isRemovable
-          onRemove={(list) => console.log(list)}
-        />
-        <AddList onAdd={onAddList} colors={DB.colors} />
+
+        {/* Наши списки дел, проверяем есть ли они - рендерим, нет их - надпись "загрузка" */}
+        {lists ? (
+          <List
+            items={lists}
+            isRemovable
+            onRemove={(id) => {
+              const newLists = lists.filter((item) => item.id !== id);
+              setLists(newLists);
+            }}
+          />
+        ) : (
+          "Загрузка..."
+        )}
+
+        {/* кнопка "добавить список" + модальное окно с цветами */}
+        <AddList onAdd={onAddList} colors={colors} />
       </div>
+
+      {/* наши дела в каждом списке дел */}
       <div className="todo__tasks">
-        <Tasks />
+        {/* компонент Tasks не будет рендериться до тех пор, пока в lists что-то не появится, поскольку изначально lists = null */}
+        {lists && <Tasks list={lists[0]} />}
       </div>
     </div>
   );
