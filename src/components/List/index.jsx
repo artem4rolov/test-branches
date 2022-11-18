@@ -8,7 +8,7 @@ import removeSvg from '../../assets/img/remove.svg'
 
 import './List.scss'
 
-const List = ({items, isRemovable, onClick, onRemove}) => {
+const List = ({items, isRemovable, onClick, onRemove, onClickItem, activeItem}) => {
   // console.log(items, isRemovable);
   // при нажатии на крестик выскакивает alert
   const removeList = (item) => {
@@ -29,11 +29,23 @@ const List = ({items, isRemovable, onClick, onRemove}) => {
           items.map((item, index) => {
 
             return (
-              <li key={index} className={classNames(item.className, {'active': item.active})}>
+              <li 
+                key={index} 
+                // ставим className active тому элементу, id которого совпадает с id item, на каждой итерации перебора items.map
+                // но для начала проверяем, есть ли вообще activeItem (изначально в state App.js передается null)
+                className={classNames(item.className, {'active': item.active ? 
+                item.active : activeItem && activeItem.id === item.id})}
+                // передаем item, на который кликнули в компонент App.js
+                onClick={() => onClickItem(item)}
+              >
                 <i>
                   {(item.icon) ? item.icon : <Badge color={item.color.name} />}
                 </i>
-                <span>{item.name}</span>
+                
+                <span>
+                  {item.name}
+                  {/* для вывода количества дел в списке для начала проверяем, есть ли вообще дела в списке, и что количество этих дел > 0 */}
+                  {item.tasks && ` (${item.tasks.length})`}</span>
                 {isRemovable && 
                 // если есть пропс onRemovable, рисуем крестик напротив каждого списка
                 <img 

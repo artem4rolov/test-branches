@@ -36,7 +36,12 @@
     }
 
     span {
-      flex: 1
+      flex: 1;
+      // добавляем точки к названию списка, если span получается длиннее 160px
+      text-overflow: ellipsis;
+      overflow: hidden; 
+      width: 160px;  
+      white-space: nowrap;
     }
 
     &:hover {

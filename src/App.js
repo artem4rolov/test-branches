@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 // импортируем компоненты из корневого indes.js в папке components
 import { AddList, List, Tasks } from "./components";
+import { act } from "@testing-library/react";
 
 // import DB from "./assets/db.json";
 // вместо fetch используем axios
@@ -12,6 +13,7 @@ function App() {
   // создаем массив названий списков дел и его цвета (кружки)
   const [lists, setLists] = useState(null);
   const [colors, setColors] = useState(null);
+  const [activeItem, setActiveItem] = useState(null);
 
   // используя хук useEffct убеждаемся в том, что компонент точно зарендерен на страницу, и только после рендера мы вызываем GET запрос (по аналогии с жизненным циклом componentDidMount),
   //  указываем в конце пустой массив, чтобы запрос вызвался один раз (при первом монтировании компонента), или, напишем вместо пустого массива массив lists - например при изменении таблицы lists (как только добавили новый список дел - снова вызываем GET запрос)
@@ -30,9 +32,41 @@ function App() {
     });
   }, []);
 
+  // функция добавления нового списка с задачами в state (в базу данных добавляется в компоненте List)
   const onAddList = (obj) => {
-    // пихаем новый объект (название списока дел) из компонента AddList в наш state
+    // пихаем новый объект (название списка дел) из компонента AddList в наш state
     const newList = [...lists, obj];
+    // меняем state
+    setLists(newList);
+  };
+
+  // функция добавления задачи в конкретный список
+  const onAddTask = (listId, taskObj) => {
+    // пихаем новый объект (новая задача) из компонента addTaskForm в наш state
+    const newList = lists.map((list) => {
+      // если переданный id из addTaskForm совпадает с каким-либо id списка задач из БД таблицы lists
+      if (list.id === listId) {
+        // тогда берем весь список дел (tasks) в этом списке задач (list) и добавляем туда новую задачу (taskObj)
+        list.tasks = [...list.tasks, taskObj];
+      }
+      return list;
+    });
+    // меняем state
+    setLists(newList);
+  };
+
+  // функция изменения названия списка с задачами
+  const onEditListTitle = (id, title) => {
+    // пробегаем по нашей таблице lists
+    const newList = lists.map((list) => {
+      // если переданный id из Tasks совпадает с каким-либо id списка задач из БД таблицы lists
+      if (list.id === id) {
+        // меняем название списка задач
+        list.name = title;
+      }
+      return list;
+    });
+    // меняем state
     setLists(newList);
   };
 
@@ -43,6 +77,7 @@ function App() {
         <List
           items={[
             {
+              active: true,
               icon: (
                 <svg
                   width="18"
@@ -61,7 +96,6 @@ function App() {
             },
           ]}
         />
-
         {/* Наши списки дел, проверяем есть ли они - рендерим, нет их - надпись "загрузка" */}
         {lists ? (
           <List
@@ -71,6 +105,10 @@ function App() {
               const newLists = lists.filter((item) => item.id !== id);
               setLists(newLists);
             }}
+            onClickItem={(item) => {
+              setActiveItem(item);
+            }}
+            activeItem={activeItem}
           />
         ) : (
           "Загрузка..."
@@ -83,7 +121,17 @@ function App() {
       {/* наши дела в каждом списке дел */}
       <div className="todo__tasks">
         {/* компонент Tasks не будет рендериться до тех пор, пока в lists что-то не появится, поскольку изначально lists = null */}
-        {lists && <Tasks list={lists[0]} />}
+        {lists && activeItem && (
+          <Tasks
+            // передаем активный список, на который кликнули
+            list={activeItem}
+            // передаем функцию из Tasks в App.js для смены названия списка дел
+            onEditTitle={(id, title) => {
+              onEditListTitle(id, title);
+            }}
+            onAddTask={onAddTask}
+          />
+        )}
       </div>
     </div>
   );

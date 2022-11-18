@@ -43,6 +43,7 @@
   border-radius: 4px;
   padding: 8px 12px;
   width: 100%;
+  font-size: 14px;
 
   &:focus {
     border-color: #000;
@@ -53,6 +54,7 @@
   border: none;
   color: #fff;
   font-weight: 500;
+  font-size: 14px;
   padding: 10px 20px;
   background: #4DD599;
   border-radius: 4px;
@@ -64,5 +66,22 @@
 
   &:active {
     background: darken(#4DD599, 20%)
+  }
+
+  &:disabled {
+    background: #d8d8d8;
+  }
+
+  &--grey {
+    background: #F4F6F8;
+    color: #444444;
+
+    &:hover {
+      background: darken(#F4F6F8, 5%);
+    }
+
+    &:active {
+      background: darken(#F4F6F8, 15%);
+    }
   }
 }

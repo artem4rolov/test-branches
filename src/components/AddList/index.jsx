@@ -52,6 +52,9 @@ const AddList = ({colors, onAdd}) => {
         onAdd(listObj);
         onClose();
       })
+      .catch(() => {
+        alert('Ошибка при добавлении списка!')
+      })
       // неважно, успешно выполнился запрос или нет - загрузка завершена в любом случае
       .finally(() => {
         setIsLoading(false);
